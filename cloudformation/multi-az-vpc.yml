@@ -26,7 +26,7 @@ Resources:
       VpcId: !Ref MyFirstVPC
       Tags:
       - Key: Name
-        Value: wata-rt-public-from-cfn
+        Value: wata-rt-private-from-cfn
 
   PublicSubnet1A:
     Type: AWS::EC2::Subnet
