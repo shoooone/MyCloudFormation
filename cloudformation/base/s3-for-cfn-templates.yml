@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: S3 for CloudFormation templates
+
+Parameters: 
+  ResourcePrefix:
+    Type: String
+    Default: user
+
+Resources: 
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties: 
+      AccessControl: Private 
+      BucketName: !Sub ${ResourcePrefix}-cfn-templates
+Outputs:
+  BucketName:
+    Value: !Ref MyS3Bucket
+  BucketArn:
+    Value: !GetAtt MyS3Bucket.Arn
+  BucketDomain:
+    Value: !GetAtt MyS3Bucket.DomainName

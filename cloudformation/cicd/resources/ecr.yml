@@ -1,0 +1,12 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: create code commit repository
+Parameters: 
+  ResourcePrefix:
+    Type: String
+    Default: user
+
+Resources: 
+  MyECRRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub ${ResourcePrefix}-repo

@@ -1,0 +1,24 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CI/CD stack
+
+Parameters:
+  ResourcePrefix:
+    Type: String
+    Default: user
+  TemplateDomain:
+    Type: String
+    Default: user-cfn-templates.s3.amazonaws.com
+
+Resources: 
+  CodeCommitStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://${TemplateDomain}/cicd/resources/code-commit.yml
+      Parameters:
+        ResourcePrefix: !Sub ${ResourcePrefix}
+  ERCStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://${TemplateDomain}/cicd/resources/ecr.yml
+      Parameters:
+        ResourcePrefix: !Sub ${ResourcePrefix}

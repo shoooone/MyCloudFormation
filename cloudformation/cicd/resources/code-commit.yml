@@ -1,0 +1,17 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: create code commit repository
+Parameters: 
+  ResourcePrefix:
+    Type: String
+    Default: user
+
+Resources: 
+  MyCodeCommitRepository:
+    Type: AWS::CodeCommit::Repository
+    Properties:
+      RepositoryDescription: My code commit repository
+      RepositoryName: !Sub ${ResourcePrefix}-repo
+
+Outputs:
+  CodeRepository:
+    Value: !Ref MyCodeCommitRepository

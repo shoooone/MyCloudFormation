@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: ALB in Tokyo
+
+Parameters: 
+  ResourcePrefix:
+    Type: String
+    Default: user
+
+Resources: 
+  MyALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Type: application
+      IpAddressType: ipv4
+      Scheme: internet-facing
+      SecurityGroups:
+        - !Ref MyALBSecurityGroup
+      Subnets:
+        - !ImportValue PubSubnet1a
+        - !ImportValue PubSubnet1c
+        - !ImportValue PubSubnet1d
+  MyALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${ResourcePrefix}-alb-sg
+      GroupDescription: My public ALB
+      VpcId: !ImportValue MyVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+  
+Outputs:
+  MyALB:
+    Value: !Ref MyALB
+    Export:
+      Name: !Sub ${ResourcePrefix}-alb

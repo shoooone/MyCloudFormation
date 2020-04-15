@@ -1,0 +1,107 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: VPC & subnet create in Tokyo
+
+Parameters: 
+  ResourcePrefix:
+    Type: String
+    Default: user
+
+Resources: 
+  MyVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.12.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: !Sub ${ResourcePrefix}-vpc
+  PubSubnet1a:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: ap-northeast-1a
+      VpcId: !Ref MyVPC
+      CidrBlock: 10.12.0.0/24
+      Tags:
+        - Key: Name
+          Value: !Sub ${ResourcePrefix}-pub-subnet-1a
+  PubSubnet1c:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: ap-northeast-1c
+      VpcId: !Ref MyVPC
+      CidrBlock: 10.12.1.0/24
+      Tags:
+        - Key: Name
+          Value: !Sub ${ResourcePrefix}-pub-subnet-1c
+  PubSubnet1d:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: ap-northeast-1d
+      VpcId: !Ref MyVPC
+      CidrBlock: 10.12.2.0/24
+      Tags:
+        - Key: Name
+          Value: !Sub ${ResourcePrefix}-pub-subnet-1d
+  PubRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref MyVPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${ResourcePrefix}-rt-pub
+  MyInternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub ${ResourcePrefix}-igw
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref MyVPC
+      InternetGatewayId: !Ref MyInternetGateway
+  myRoute1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PubSubnet1a
+      RouteTableId: !Ref PubRouteTable
+  myRoute2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PubSubnet1c
+      RouteTableId: !Ref PubRouteTable
+  myRoute3:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PubSubnet1d
+      RouteTableId: !Ref PubRouteTable
+  routeName:
+    Type: AWS::EC2::Route
+    DependsOn: MyInternetGateway
+    Properties:
+      RouteTableId: !Ref PubRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref MyInternetGateway
+Outputs:
+  MyVPC:
+    Value: !Ref MyVPC
+    Export:
+      Name: !Sub ${ResourcePrefix}-vpc
+  MyVPCDefaultSG:
+    Value: !GetAtt [ MyVPC, DefaultSecurityGroup]
+    Export:
+      Name: !Sub ${ResourcePrefix}-vpc-default-sg
+  PubSubnet1a:
+    Value: !Ref PubSubnet1a
+    Export:
+      Name: !Sub ${ResourcePrefix}-pub-subnet-1a
+  PubSubnet1c:
+    Value: !Ref PubSubnet1c
+    Export:
+      Name: !Sub ${ResourcePrefix}-pub-subnet-1c
+  PubSubnet1d:
+    Value: !Ref PubSubnet1d
+    Export:
+      Name: !Sub ${ResourcePrefix}-pub-subnet-1d
