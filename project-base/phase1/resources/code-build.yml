@@ -24,12 +24,16 @@ Resources:
             Statement:
               - Effect: Allow
                 Action: 
+                  - codecommit:*
                   - ecr:BatchCheckLayerAvailability
                   - ecr:CompleteLayerUpload
                   - ecr:GetAuthorizationToken
                   - ecr:InitiateLayerUpload
                   - ecr:PutImage
                   - ecr:UploadLayerPart
+                  - logs:*
+                  - s3:Put*
+                  - s3:Get*
                 Resource: '*'
   Build:
     Type: AWS::CodeBuild::Project

@@ -37,3 +37,4 @@ Resources:
         CodeRepository: !GetAtt CodeCommitStack.Outputs.CodeRepository
         CodeRepositoryArn: !GetAtt  CodeCommitStack.Outputs.CodeRepositoryArn
         BuildName: !GetAtt CodeBuildStack.Outputs.BuildName
+        ImageRepository: !GetAtt ECRStack.Outputs.ImageRepository
