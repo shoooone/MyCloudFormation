@@ -1,0 +1,18 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Container Image Repository
+Parameters: 
+  ResourcePrefix:
+    Type: String
+    Default: user
+
+Resources: 
+  MyECRRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub ${ResourcePrefix}-repo
+
+Outputs:
+  ImageRepository:
+    Value: !Ref MyECRRepository
+  ImageRepositoryARN:
+    Value: !GetAtt MyECRRepository.Arn

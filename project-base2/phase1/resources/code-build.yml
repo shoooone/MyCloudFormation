@@ -1,0 +1,76 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Create Code build stack
+
+Parameters:
+  ResourcePrefix:
+    Type: String
+    Default: user
+  SourceUrl:
+    Type: String
+    Default: https://xxx.codecommit.amazonaws.com/v1/
+  ImageRepository:
+    Type: String
+    Default: user-repo
+
+Resources: 
+  BuildServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument: 
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - codecommit:*
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:CompleteLayerUpload
+                  - ecr:GetAuthorizationToken
+                  - ecr:InitiateLayerUpload
+                  - ecr:PutImage
+                  - ecr:UploadLayerPart
+                  - logs:*
+                  - s3:Put*
+                  - s3:Get*
+                Resource: '*'
+  Build:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${ResourcePrefix}-build
+      Description: !Sub ${ResourcePrefix} build project
+      ServiceRole: !GetAtt BuildServiceRole.Arn
+      Artifacts:
+        Type: NO_ARTIFACTS
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/java:openjdk-8
+        PrivilegedMode: true
+        EnvironmentVariables: 
+          - Name: AWS_ACCOUNT_ID
+            Type: PLAINTEXT
+            Value: !Ref AWS::AccountId
+          - Name: AWS_DEFAULT_REGION
+            Type: PLAINTEXT
+            Value: !Ref AWS::Region
+          - Name: IMAGE_REPO_NAME
+            Type: PLAINTEXT
+            Value: !Ref ImageRepository
+      Source:
+        Type: CODECOMMIT
+        Location: !Ref SourceUrl
+      TimeoutInMinutes: 10
+
+Outputs:
+  BuildName:
+    Value: !Ref Build
+  BuildArn:
+    Value: !GetAtt Build.Arn

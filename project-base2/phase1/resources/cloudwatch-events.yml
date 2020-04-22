@@ -1,0 +1,61 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Code Pipeline
+
+Parameters:
+  ResourcePrefix:
+    Type: String
+    Default: user
+  CodeRepositoryArn:
+    Type: String
+    Default: arn:xxx:xxx:xxx
+  BuildArn:
+    Type: String
+    Default: arn:xxx:xxx:xxx
+
+Resources: 
+  AmazonCloudWatchEventRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument: 
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - events.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: !Sub ${ResourcePrefix}-cwe-codebuild-startbuild
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+                - Effect: Allow
+                  Action: codebuild:StartBuild
+                  Resource: !Ref BuildArn 
+  CreateTagEventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: !Sub ${ResourcePrefix} created tag event.
+      EventPattern:
+        source:
+          - aws.codecommit
+        resources: 
+          - !Ref CodeRepositoryArn
+        detail-type:
+          - 'CodeCommit Repository State Change'
+        detail:
+          event:
+            - referenceCreated
+          referenceType:
+            - tag
+      State:  ENABLED
+      Targets:
+      - Arn: !Ref BuildArn
+        Id: !Sub ${ResourcePrefix}-event-target-pipeline
+        RoleArn: !GetAtt AmazonCloudWatchEventRole.Arn
+        InputTransformer: 
+          InputPathsMap:
+            TagName: $.detail.referenceName
+            SourceVersion: $.detail.referenceFullName
+          InputTemplate: '{"sourceVersion":<SourceVersion>,"environmentVariablesOverride":[{"name":"TAG_NAME","value":<TagName>,"type":"PLAINTEXT"}]}'

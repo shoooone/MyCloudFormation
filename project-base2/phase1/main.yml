@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Setup Project Base
+
+Parameters:
+  ResourcePrefix:
+    Type: String
+    Default: user
+  TemplatePath:
+    Type: String
+    Default: https://user-cfn-templates.s3.amazonaws.com/project/phase1
+
+Resources: 
+  CodeCommitStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub ${TemplatePath}/resources/code-commit.yml
+      Parameters:
+        ResourcePrefix: !Sub ${ResourcePrefix}
+  ECRStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub ${TemplatePath}/resources/ecr.yml
+      Parameters:
+        ResourcePrefix: !Sub ${ResourcePrefix}
+  CodeBuildStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub ${TemplatePath}/resources/code-build.yml
+      Parameters:
+        ResourcePrefix: !Sub ${ResourcePrefix}
+        SourceUrl: !GetAtt CodeCommitStack.Outputs.CodeRepositoryUrl
+        ImageRepository: !GetAtt ECRStack.Outputs.ImageRepository
+  CloudWatchEventsStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub ${TemplatePath}/resources/cloudwatch-events.yml
+      Parameters:
+        ResourcePrefix: !Sub ${ResourcePrefix}
+        CodeRepositoryArn: !GetAtt  CodeCommitStack.Outputs.CodeRepositoryArn
+        BuildArn: !GetAtt CodeBuildStack.Outputs.BuildArn
+        
